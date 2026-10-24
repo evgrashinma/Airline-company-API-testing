@@ -1,0 +1,1912 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Брейни GO API",
+    "version": "2.0.0",
+    "description": "Документация API для проекта Брейни GO"
+  },
+  "servers": [
+    {
+      "url": "https://edu.brainy.run/api/go",
+      "description": "Продакшн-сервер"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Пользователи",
+      "description": "Управление пользователями, включая создание, получение и удаление пользователей."
+    },
+    {
+      "name": "Корпорации",
+      "description": "Управление корпорациями, включая создание и получение информации о корпорациях."
+    },
+    {
+      "name": "Корабли",
+      "description": "Управление кораблями, включая добавление и получение информации о типах и конкретных кораблях."
+    },
+    {
+      "name": "Пункты назначения",
+      "description": "Управление пунктами назначения, включая добавление и получение информации о них."
+    },
+    {
+      "name": "Маршруты",
+      "description": "Управление маршрутами, включая создание и получение информации о маршрутах."
+    },
+    {
+      "name": "Рейсы",
+      "description": "Управление рейсами, включая добавление и получение информации о рейсах."
+    },
+    {
+      "name": "Песочница",
+      "description": "Управление данными текущего пользователя."
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/sandbox": {
+      "delete": {
+        "tags": [
+          "Песочница"
+        ],
+        "summary": "Очистить свои данные",
+        "description": "Удаляет всех пользователей, корпорации, корабли, пункты назначения, маршруты и рейсы, созданные текущим пользователем.",
+        "responses": {
+          "200": {
+            "description": "Данные удалены",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "База данных успешно очищена"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Получить всех пользователей",
+        "description": "Возвращает список всех зарегистрированных пользователей. Можно использовать опциональные query-параметры для фильтрации по имени и роли.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Фильтр по имени пользователя"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Фильтр по роли пользователя"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список пользователей",
+            "content": {
+              "application/json": {
+                "example": {
+                  "users": [
+                    {
+                      "id": 12,
+                      "email": "user1@example.com",
+                      "username": "user1",
+                      "password": "$2b$10$…",
+                      "name": "Брейни",
+                      "role": "owner",
+                      "avatar_url": null
+                    },
+                    {
+                      "id": 13,
+                      "email": "user2@example.com",
+                      "username": "user2",
+                      "password": "$2b$10$…",
+                      "name": "Робби",
+                      "role": "passenger",
+                      "avatar_url": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Создать нового пользователя",
+        "description": "Создает нового пользователя с указанными данными.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              },
+              "example": {
+                "email": "user@brainy.run",
+                "username": "brainythebest",
+                "password": "superpassword",
+                "name": "Брейни",
+                "role": "owner",
+                "avatar_url": "https://s3.ru1.storage.beget.cloud/bb4e0f3f0f81-brainy-platform/API%2FGO%2Fcandidate2.png"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Пользователь успешно создан",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/users/12"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пользователь успешно создан",
+                  "user_id": 12
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка валидации. Проверьте введенные данные."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "Пользователь с таким email или username уже существует",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "duplicate_email": {
+                    "summary": "Такой email уже есть",
+                    "value": {
+                      "message": "Пользователь с таким email уже существует"
+                    }
+                  },
+                  "duplicate_username": {
+                    "summary": "Такой username уже есть",
+                    "value": {
+                      "message": "Пользователь с таким username уже существует"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Получить пользователя по ID",
+        "description": "Возвращает информацию о пользователе с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о пользователе",
+            "content": {
+              "application/json": {
+                "example": {
+                  "user": {
+                    "id": 12,
+                    "email": "browny@example.com",
+                    "username": "browny",
+                    "password": "$2b$10$…",
+                    "name": "Брауни",
+                    "role": "owner",
+                    "avatar_url": "http://example.com/browny.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пользователь не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Удалить пользователя",
+        "description": "Удаляет пользователя с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Пользователь успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "Ошибка при удалении",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка при удалении пользователя"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/password": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "put": {
+        "tags": [
+          "Пользователи"
+        ],
+        "summary": "Изменить пароль пользователя",
+        "description": "Устанавливает новый пароль пользователю с указанным ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "new_password"
+                ],
+                "properties": {
+                  "new_password": {
+                    "type": "string",
+                    "description": "Новый пароль"
+                  }
+                }
+              },
+              "example": {
+                "new_password": "newpassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Пароль успешно изменен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пароль успешно изменен"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка валидации. Проверьте введенный пароль."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пользователь с ID: 12 не найден"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/corporations": {
+      "get": {
+        "tags": [
+          "Корпорации"
+        ],
+        "summary": "Получить все корпорации",
+        "description": "Возвращает список всех зарегистрированных корпораций. Можно отфильтровать по владельцу.",
+        "parameters": [
+          {
+            "name": "owner_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID пользователя-владельца"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список корпораций",
+            "content": {
+              "application/json": {
+                "example": {
+                  "corporations": [
+                    {
+                      "id": 7,
+                      "owner_id": 12,
+                      "name": "RobbiZlo Inc.",
+                      "description": "Ешь свои фрукты",
+                      "Спортакус. Мы уже победили!": null,
+                      "logo_url": "http://example.com/logo1.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Корпорации"
+        ],
+        "summary": "Создать новую корпорацию",
+        "description": "Создает новую корпорацию, привязанную к указанному владельцу.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorporationInput"
+              },
+              "example": {
+                "owner_id": 12,
+                "name": "RobbiZlo Inc.",
+                "description": "Ешь свои фрукты, Спортакус. Мы уже победили!",
+                "logo_url": "https://s3.ru1.storage.beget.cloud/bb4e0f3f0f81-brainy-platform/API%2FGO%2Frobbie.jpg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Корпорация успешно создана",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/corporations/7"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корпорация успешно создана",
+                  "corporation_id": 7
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Отсутствуют обязательные поля",
+                    "value": {
+                      "message": "Отсутствуют обязательные поля"
+                    }
+                  },
+                  "invalid_name": {
+                    "summary": "Имя не прошло валидацию",
+                    "value": {
+                      "message": "Имя корпорации не прошло валидацию"
+                    }
+                  },
+                  "invalid_description": {
+                    "summary": "Описание не прошло валидацию",
+                    "value": {
+                      "message": "Описание корпорации не прошло валидацию"
+                    }
+                  },
+                  "invalid_logo": {
+                    "summary": "Аватар не прошел валидацию",
+                    "value": {
+                      "message": "Аватар корпорации не прошел валидацию"
+                    }
+                  },
+                  "other_validation_errors": {
+                    "summary": "Другие ошибки",
+                    "value": {
+                      "message": "Ошибка валидации. Проверьте введенные данные."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/corporations/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Корпорации"
+        ],
+        "summary": "Получить корпорацию по ID",
+        "description": "Возвращает информацию о корпорации с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о корпорации",
+            "content": {
+              "application/json": {
+                "example": {
+                  "corporation": {
+                    "id": 7,
+                    "owner_id": 12,
+                    "name": "RobbiZlo Inc.",
+                    "description": "Ешь свои фрукты",
+                    "Спортакус. Мы уже победили!": null,
+                    "logo_url": "http://example.com/logo1.png"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корпорация не найдена",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корпорация не найдена"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Корпорации"
+        ],
+        "summary": "Удалить корпорацию",
+        "description": "Удаляет корпорацию с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Корпорация успешно удалена"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корпорация не найдена",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корпорация с ID: 7 не найдена, удаление невозможно"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка при удалении",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка при удалении корпорации"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/corporations/{id}/ships": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Получить корабли корпорации",
+        "description": "Возвращает список кораблей, принадлежащих указанной корпорации.",
+        "responses": {
+          "200": {
+            "description": "Список кораблей",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ships": [
+                    {
+                      "id": 9,
+                      "corporation_id": 7,
+                      "type_id": 1,
+                      "name": "Голубь",
+                      "description": "Быстрый и лёгкий",
+                      "custom_photo_url": null,
+                      "type_name": "Легкий шаттл",
+                      "default_photo_url": "http://example.com/pigeon.png",
+                      "max_capacity": 4,
+                      "max_range": 0.33
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корпорация не найдена",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корпорация не найдена"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/corporations/{id}/trips": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Получить рейсы корпорации",
+        "description": "Возвращает список рейсов, связанных с указанной корпорацией.",
+        "responses": {
+          "200": {
+            "description": "Список рейсов",
+            "content": {
+              "application/json": {
+                "example": {
+                  "trips": [
+                    {
+                      "id": 15,
+                      "date": "2327-05-01",
+                      "cost": 562.5,
+                      "ship_name": "Голубь",
+                      "distance": 12.5,
+                      "from_name": "Земля",
+                      "to_name": "Марс"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корпорация не найдена",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корпорация не найдена"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ship-types": {
+      "get": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Получить все типы кораблей",
+        "description": "Возвращает список всех доступных типов кораблей.",
+        "responses": {
+          "200": {
+            "description": "Список типов кораблей",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ship_types": [
+                    {
+                      "id": 1,
+                      "name": "Легкий шаттл",
+                      "photo_url": "http://example.com/light-shuttle.png",
+                      "max_capacity": 4,
+                      "max_range": 0.33
+                    },
+                    {
+                      "id": 2,
+                      "name": "Межпланетный крейсер",
+                      "photo_url": "http://example.com/cruiser.png",
+                      "max_capacity": 15,
+                      "max_range": 12.2
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Добавить новый тип корабля",
+        "description": "Добавляет новый тип корабля с указанными характеристиками.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipTypeInput"
+              },
+              "example": {
+                "name": "Крейсер",
+                "photo_url": "http://example.com/cruiser.png",
+                "max_capacity": 100,
+                "max_range": 1000
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Тип корабля успешно добавлен",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/ship-types/5"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "ship_type_id": 5
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Не переданы обязательные параметры: name, photo_url, max_capacity или max_range"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Доступ запрещен",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Добавить тип корабля можно только через Postman"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ship-types/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Получить тип корабля по ID",
+        "description": "Возвращает информацию о типе корабля с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о типе корабля",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ship_type": {
+                    "id": 2,
+                    "name": "Межпланетный крейсер",
+                    "photo_url": "http://example.com/cruiser.png",
+                    "max_capacity": 15,
+                    "max_range": 12.2
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Тип корабля не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Тип корабля не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Удалить тип корабля",
+        "description": "Удаляет тип корабля с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Тип корабля успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Удаление запрещено",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Удаление стандартных типов кораблей запрещено"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Тип корабля не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Тип корабля с ID: 5 не найден, удаление невозможно"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Существуют корабли этого типа",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Невозможно удалить тип корабля, пока существуют корабли этого типа. Сначала удалите все корабли данного типа"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ships": {
+      "get": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Получить все корабли",
+        "description": "Возвращает список всех кораблей. Можно отфильтровать по корпорации.",
+        "parameters": [
+          {
+            "name": "corporation_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID корпорации"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список кораблей",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ships": [
+                    {
+                      "id": 9,
+                      "corporation_id": 7,
+                      "type_id": 1,
+                      "name": "Голубь",
+                      "description": "Быстрый и лёгкий",
+                      "custom_photo_url": null,
+                      "type_name": "Легкий шаттл",
+                      "default_photo_url": "http://example.com/pigeon.png",
+                      "max_capacity": 4,
+                      "max_range": 0.33
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Добавить новый корабль",
+        "description": "Добавляет новый корабль в систему для указанной корпорации.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipInput"
+              },
+              "example": {
+                "corporation_id": 7,
+                "type_id": 2,
+                "name": "Энтерпрайз",
+                "description": "Флагман корпорации",
+                "custom_photo_url": "http://example.com/enterprise.jpg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Корабль успешно добавлен",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/ships/9"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "ship_id": 9
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Отсутствуют обязательные поля",
+                    "value": {
+                      "message": "Не переданы обязательные параметры: corporation_id, type_id или name"
+                    }
+                  },
+                  "invalid_data": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "message": "Имя корабля должно содержать только латинские и кириллические буквы"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корпорация или тип корабля не найдены",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "corporation_not_found": {
+                    "summary": "Корпорация не найдена",
+                    "value": {
+                      "message": "Корпорация с ID: 7 не найдена"
+                    }
+                  },
+                  "ship_type_not_found": {
+                    "summary": "Тип корабля не найден",
+                    "value": {
+                      "message": "Тип корабля с ID: 9 не найден"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ships/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Получить корабль по ID",
+        "description": "Возвращает информацию о корабле с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о корабле",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ship": {
+                    "id": 9,
+                    "corporation_id": 7,
+                    "type_id": 1,
+                    "name": "Голубь",
+                    "description": "Быстрый и лёгкий",
+                    "custom_photo_url": null,
+                    "type_name": "Легкий шаттл",
+                    "default_photo_url": "http://example.com/pigeon.png",
+                    "max_capacity": 4,
+                    "max_range": 0.33
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корабль не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корабль не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Корабли"
+        ],
+        "summary": "Удалить корабль",
+        "description": "Удаляет корабль с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Корабль успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Корабль не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Корабль с ID: 9 не найден, удаление невозможно"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка при удалении",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка при удалении корабля"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/destinations": {
+      "get": {
+        "tags": [
+          "Пункты назначения"
+        ],
+        "summary": "Получить все пункты назначения",
+        "description": "Возвращает список всех доступных пунктов назначения.",
+        "responses": {
+          "200": {
+            "description": "Список пунктов назначения",
+            "content": {
+              "application/json": {
+                "example": {
+                  "destinations": [
+                    {
+                      "id": 1,
+                      "name": "Земля"
+                    },
+                    {
+                      "id": 2,
+                      "name": "Марс"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Пункты назначения"
+        ],
+        "summary": "Добавить новый пункт назначения",
+        "description": "Добавляет новый пункт назначения в систему.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Название пункта назначения"
+                  }
+                }
+              },
+              "example": {
+                "name": "Марс"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Пункт назначения успешно добавлен",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/destinations/3"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "destination_id": 3
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Не передан обязательный параметр: name"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/destinations/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Пункты назначения"
+        ],
+        "summary": "Получить пункт назначения по ID",
+        "description": "Возвращает информацию о пункте назначения с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о пункте назначения",
+            "content": {
+              "application/json": {
+                "example": {
+                  "destination": {
+                    "id": 2,
+                    "name": "Марс"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Пункт назначения не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пункт назначения не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Пункты назначения"
+        ],
+        "summary": "Удалить пункт назначения",
+        "description": "Удаляет пункт назначения с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Пункт назначения успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Пункт назначения не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пункт назначения с ID: 3 не найден, удаление невозможно"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка при удалении",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка при удалении пункта назначения"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes": {
+      "get": {
+        "tags": [
+          "Маршруты"
+        ],
+        "summary": "Получить все маршруты",
+        "description": "Возвращает список всех доступных маршрутов.",
+        "responses": {
+          "200": {
+            "description": "Список маршрутов",
+            "content": {
+              "application/json": {
+                "example": {
+                  "routes": [
+                    {
+                      "id": 4,
+                      "from_id": 1,
+                      "to_id": 2,
+                      "distance": 12.5
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Маршруты"
+        ],
+        "summary": "Создать новый маршрут",
+        "description": "Создает новый маршрут между двумя пунктами назначения.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteInput"
+              },
+              "example": {
+                "from_id": 1,
+                "to_id": 2,
+                "distance": 12.5
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Маршрут успешно создан",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/routes/4"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "route_id": 4
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Отсутствуют обязательные поля",
+                    "value": {
+                      "message": "Не переданы обязательные параметры: from_id, to_id или distance"
+                    }
+                  },
+                  "invalid_distance": {
+                    "summary": "Расстояние не число",
+                    "value": {
+                      "message": "Поле 'distance' должно быть числом"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Пункт назначения не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Пункт назначения с ID: 1 не найден"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Маршруты"
+        ],
+        "summary": "Получить маршрут по ID",
+        "description": "Возвращает информацию о маршруте с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о маршруте",
+            "content": {
+              "application/json": {
+                "example": {
+                  "route": {
+                    "id": 4,
+                    "from_id": 1,
+                    "to_id": 2,
+                    "distance": 12.5
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Маршрут не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Маршрут не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Маршруты"
+        ],
+        "summary": "Удалить маршрут",
+        "description": "Удаляет маршрут с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Маршрут успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Маршрут не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Маршрут с ID: 4 не найден, удаление невозможно"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ошибка при удалении",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Ошибка при удалении маршрута"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips": {
+      "get": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Получить все рейсы",
+        "description": "Возвращает список всех рейсов.",
+        "responses": {
+          "200": {
+            "description": "Список рейсов",
+            "content": {
+              "application/json": {
+                "example": {
+                  "trips": [
+                    {
+                      "id": 15,
+                      "date": "2327-05-01",
+                      "cost": 562.5,
+                      "ship_name": "Голубь",
+                      "distance": 12.5,
+                      "from_name": "Земля",
+                      "to_name": "Марс"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Добавить новый рейс",
+        "description": "Добавляет новый рейс с указанными параметрами.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TripInput"
+              },
+              "example": {
+                "ship_id": 9,
+                "route_id": 4,
+                "date": "2327-05-01"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Рейс успешно добавлен",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/api/go/trips/15"
+              }
+            },
+            "content": {
+              "application/json": {
+                "examples": {
+                  "created": {
+                    "summary": "Рейс добавлен",
+                    "value": {
+                      "trip_id": 15
+                    }
+                  },
+                  "unsupported_type": {
+                    "summary": "Расчет стоимости для этого типа корабля не поддерживается",
+                    "value": {
+                      "trip_id": 15,
+                      "message": "Перелёту назначена стоимость (cost) = 0. Автоматический расчет цены невозможен, так как введен неподдерживаемый тип корабля. Поддерживаются только типы кораблей с id с 1 по 4."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Отсутствуют обязательные поля",
+                    "value": {
+                      "message": "Не переданы обязательные параметры: ship_id, route_id или date"
+                    }
+                  },
+                  "invalid_data": {
+                    "summary": "Ошибка валидации данных",
+                    "value": {
+                      "message": "Ошибка валидации данных"
+                    }
+                  },
+                  "range_check_failed": {
+                    "summary": "Не удалось проверить дальность",
+                    "value": {
+                      "message": "Не удалось проверить расстояние путешествия. Проверьте валидность id корабля и маршрута"
+                    }
+                  },
+                  "range_exceeded": {
+                    "summary": "Расстояние превышает максимальную дальность",
+                    "value": {
+                      "message": "Расстояние путешествия превышает максимальную дальность хода этого корабля"
+                    }
+                  },
+                  "date_in_past": {
+                    "summary": "Дата рейса в прошлом",
+                    "value": {
+                      "message": "Нельзя добавлять рейс на дату, которая уже прошла. Напоминаю год: 2326"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/trips/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/id"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Получить рейс по ID",
+        "description": "Возвращает информацию о рейсе с указанным ID.",
+        "responses": {
+          "200": {
+            "description": "Информация о рейсе",
+            "content": {
+              "application/json": {
+                "example": {
+                  "trip": {
+                    "id": 15,
+                    "ship_id": 9,
+                    "route_id": 4,
+                    "date": "2327-05-01",
+                    "cost": 562.5
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Рейс не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Рейс не найден"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Удалить рейс",
+        "description": "Удаляет рейс с указанным ID.",
+        "responses": {
+          "204": {
+            "description": "Рейс успешно удален"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Рейс не найден",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Рейс с ID: 15 не найден, удаление невозможно"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Рейсы"
+        ],
+        "summary": "Изменить стоимость рейса",
+        "description": "Обновляет стоимость рейса с указанным ID. Запрос и ответ в формате XML.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/xml": {
+              "schema": {
+                "type": "object",
+                "xml": {
+                  "name": "Request"
+                },
+                "required": [
+                  "newCost"
+                ],
+                "properties": {
+                  "newCost": {
+                    "type": "number",
+                    "description": "Новая стоимость рейса"
+                  }
+                }
+              },
+              "example": "<Request>\n  <newCost>123.5</newCost>\n</Request>\n"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Стоимость рейса успешно обновлена",
+            "content": {
+              "application/xml": {
+                "example": "<Response>\n  <message>Цена рейса успешно обновлена</message>\n  <trip_id>15</trip_id>\n  <new_cost>123.5</new_cost>\n</Response>\n"
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка в запросе",
+            "content": {
+              "application/xml": {
+                "examples": {
+                  "wrong_content_type": {
+                    "summary": "Неверный Content-Type",
+                    "value": "<Response>\n  <message>Content-Type должен быть application/xml</message>\n</Response>\n"
+                  },
+                  "missing_elements": {
+                    "summary": "Отсутствуют обязательные элементы",
+                    "value": "<Response>\n  <message>Отсутствуют обязательные элементы: newCost</message>\n</Response>\n"
+                  },
+                  "parse_error": {
+                    "summary": "Ошибка парсинга XML",
+                    "value": "<Response>\n  <message>Ошибка парсинга XML</message>\n</Response>\n"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Рейс не найден",
+            "content": {
+              "application/xml": {
+                "example": "<Response>\n  <message>Рейс с ID: 15 не найден, обновление цены невозможно</message>\n</Response>\n"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "parameters": {
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "ID объекта"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Требуется авторизация",
+        "content": {
+          "application/json": {
+            "example": {
+              "message": "Нужна авторизация. Во вкладке Authorization выбери Basic Auth и введи email и пароль, с которыми ты входишь на сайт Школы Брейни."
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "UserInput": {
+        "type": "object",
+        "required": [
+          "email",
+          "username",
+          "password",
+          "name",
+          "role"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email пользователя"
+          },
+          "username": {
+            "type": "string",
+            "description": "Имя пользователя"
+          },
+          "password": {
+            "type": "string",
+            "description": "Пароль"
+          },
+          "name": {
+            "type": "string",
+            "description": "Полное имя"
+          },
+          "role": {
+            "type": "string",
+            "description": "Роль пользователя"
+          },
+          "avatar_url": {
+            "type": "string",
+            "description": "URL аватара пользователя"
+          }
+        }
+      },
+      "CorporationInput": {
+        "type": "object",
+        "required": [
+          "owner_id",
+          "name"
+        ],
+        "properties": {
+          "owner_id": {
+            "type": "integer",
+            "description": "ID пользователя",
+            "который владеет корпорацией": null
+          },
+          "name": {
+            "type": "string",
+            "description": "Название корпорации"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание корпорации"
+          },
+          "logo_url": {
+            "type": "string",
+            "description": "URL логотипа корпорации"
+          }
+        }
+      },
+      "ShipTypeInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "photo_url",
+          "max_capacity",
+          "max_range"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название типа корабля"
+          },
+          "photo_url": {
+            "type": "string",
+            "description": "URL фотографии типа корабля"
+          },
+          "max_capacity": {
+            "type": "integer",
+            "description": "Максимальная вместимость"
+          },
+          "max_range": {
+            "type": "number",
+            "description": "Максимальная дальность хода"
+          }
+        }
+      },
+      "ShipInput": {
+        "type": "object",
+        "required": [
+          "corporation_id",
+          "type_id",
+          "name"
+        ],
+        "properties": {
+          "corporation_id": {
+            "type": "integer",
+            "description": "ID корпорации-владельца"
+          },
+          "type_id": {
+            "type": "integer",
+            "description": "ID типа корабля"
+          },
+          "name": {
+            "type": "string",
+            "description": "Название корабля"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание корабля"
+          },
+          "custom_photo_url": {
+            "type": "string",
+            "description": "URL собственной фотографии корабля"
+          }
+        }
+      },
+      "RouteInput": {
+        "type": "object",
+        "required": [
+          "from_id",
+          "to_id",
+          "distance"
+        ],
+        "properties": {
+          "from_id": {
+            "type": "integer",
+            "description": "ID пункта отправления"
+          },
+          "to_id": {
+            "type": "integer",
+            "description": "ID пункта назначения"
+          },
+          "distance": {
+            "type": "number",
+            "description": "Расстояние между пунктами"
+          }
+        }
+      },
+      "TripInput": {
+        "type": "object",
+        "required": [
+          "ship_id",
+          "route_id",
+          "date"
+        ],
+        "properties": {
+          "ship_id": {
+            "type": "integer",
+            "description": "ID корабля"
+          },
+          "route_id": {
+            "type": "integer",
+            "description": "ID маршрута"
+          },
+          "date": {
+            "type": "string",
+            "description": "Дата рейса в формате YYYY-MM-DD"
+          }
+        }
+      }
+    }
+  }
+}
